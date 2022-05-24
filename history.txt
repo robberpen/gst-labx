@@ -1,0 +1,58 @@
+--- 220512 ---
+
+update tmp8
+
+
+--- 220509 ---
+make -f gst-b2.mk run_it run="/data/gst-a" t=7200
+
+--- 220506 ./2022-05-06-17-49-gst-b2-334MB ---
+1. checking
+LAB5-220506-memleak-libso-recorder $ make -f upload.mk md5sum  T=/usr/lib/camera/components/com.qti.offline.jpeg.so
+sudo adb shell md5sum /usr/lib/camera/components/com.qti.offline.jpeg.so
+14c55bd9e1b8824d4b6526c1327f201a  /usr/lib/camera/components/com.qti.offline.jpeg.so
+md5sum orig/com.qti.offline.jpeg.so
+69c91ca826dec4c6c2470c87e50267e1  orig/com.qti.offline.jpeg.so
+md5sum com.qti.offline.jpeg.so
+14c55bd9e1b8824d4b6526c1327f201a  com.qti.offline.jpeg.so
+LAB5-220506-memleak-libso-recorder $ make -f upload.mk md5sum  T=/usr/lib/hw/camera.qcom.so
+sudo adb shell md5sum /usr/lib/hw/camera.qcom.so
+7c2a7c68f359284b878a4294737add3f  /usr/lib/hw/camera.qcom.so
+md5sum orig/camera.qcom.so
+42295777e51d7446e30a6b920942a8ec  orig/camera.qcom.so
+md5sum camera.qcom.so
+7c2a7c68f359284b878a4294737add3f  camera.qcom.so
+LAB5-220506-memleak-libso-recorder $ make -f upload.mk md5sum
+sudo adb shell md5sum /usr/lib/libqmmf_recorder_service.so
+f522a93082d31cdbf0564b6ea4cb9ac3  /usr/lib/libqmmf_recorder_service.so
+md5sum orig/libqmmf_recorder_service.so
+55bf1fa53efb25fa82f6fcdd3363cdba  orig/libqmmf_recorder_service.so
+md5sum libqmmf_recorder_service.so
+f522a93082d31cdbf0564b6ea4cb9ac3  libqmmf_recorder_service.so
+
+2.  make -f gst-b2.mk init_after_reboot
+3.  make -f gst-b2.mk run_it run="/data/gst-b2" t=43200
+
+--- 220502 ---
+make -f upload.mk init_once
+make -f upload.mk init_once T=/usr/lib/hw/camera.qcom.so
+make -f upload.mk  remount
+LAB4-220503-memleak-new-libso $ make -f upload.mk  upload
+adbd is already running as root
+5774 KB/s (582232 bytes in 0.098s)
+make sure md5 is same
+14c55bd9e1b8824d4b6526c1327f201a  /usr/lib/camera/components/com.qti.offline.jpeg.so
+14c55bd9e1b8824d4b6526c1327f201a  com.qti.offline.jpeg.so
+Might need reboot; adb reboot;sleep 10;adb root
+LAB4-220503-memleak-new-libso $ make -f upload.mk  upload  T=/usr/lib/hw/camera.qcom.so
+adbd is already running as root
+6360 KB/s (43025536 bytes in 6.605s)
+make sure md5 is same
+7c2a7c68f359284b878a4294737add3f  /usr/lib/hw/camera.qcom.so
+7c2a7c68f359284b878a4294737add3f  camera.qcom.so
+Might need reboot; adb reboot;sleep 10;adb root
+
+adb reboot;sleep 10;adb root
+
+make -f gst-b2.mk init_after_reboot
+make -f gst-b2.mk run_it

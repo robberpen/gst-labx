@@ -1,0 +1,1 @@
+upload libqmmf_recorder_service.so libgstqtiqmmfsrc.so
