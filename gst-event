@@ -21,17 +21,20 @@ case $1 in
     ;;
   "00000004")
     echo "GST_STATE_PLAYING"
-    kill $logcat_pid
-    kill $dmesg_pid
+    kill $(cat /data/logcat.pid)
+    kill $(cat /data/dmesg.pid)
+    echo "pid of $(cat /data/logcat.pid) $(cat /data/dmesg.pid)" >> /data/gst-event.log
     logcat -c
     logcat -b kernel -c
     [ -s /data/gst.GST_STATE_PLAYING.log ] && mv /data/gst.GST_STATE_PLAYING.log /data/gst.GST_STATE_PLAYING-last.log
     [ -s /data/gst.GST_STATE_PLAYING.dmesg  ] && mv /data/gst.GST_STATE_PLAYING.dmesg /data/gst.GST_STATE_PLAYING-last.dmesg
     logcat |head -n 100000 > /data/gst.GST_STATE_PLAYING.log &
     logcat_pid=$!
+    echo $logcat_pid  > /data/logcat.pid
     logcat -b kernel -v time  |head -n 100000 > /data/gst.GST_STATE_PLAYING.dmesg &
     dmesg_pid=$!
-    echo "logcat_pid: $logcat_pid" >> /data/gst-event.log
+    echo $dmesg_pid >  /data/dmesg.pid
+    echo "logcat_pid: $logcat_pid  dmesg_pid:  $dmesg_pid" >> /data/gst-event.log
     ;;
   *)
       break

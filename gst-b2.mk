@@ -12,6 +12,7 @@ gst-b2_help:
 	@echo "init_after_reboot	# init rtsp server"
 	@echo "run_it run=\"/data/gst-b2\" t=43200	# run /data/gst-b2 12hr"
 	@echo "logcat_t0: \"$(logcat_t0)\""
+	@echo  "fail_log_get d=<DIR>	# download log if fail"
 
 rtsp_server:
 	adb root
@@ -23,6 +24,11 @@ rtsp_server:
 	adb forward --list
 
 upload_files:
+	adb push gst-a /data/
+	adb push gst-a1 /data/
+	adb push gst-a2 /data/
+	adb push gst-a3 /data/
+	adb push gst-a1.1 /data/
 	adb push gst-b1 /data/
 	adb push gst-b2 /data/
 	adb push gst-b3 /data/
@@ -54,10 +60,11 @@ dot_get:
 run_it:
 	@adb root;sleep 5; mkdir $d
 	adb shell "rm /data/gst.GST_STATE_PLAYING*"
+	adb shell rm /data/gst-event.log
 	adb logcat -c;adb shell "timeout -t $(logcat_t0) -s INT logcat > /data/logcat.mk.log" &
 	adb shell "$(run)"  > $d/runit.log &
 	adb shell "timeout -t $t -s INT /data/memleak.sh" |tee $d/memleak.log &
-	adb shell "timeout -t $t -s INT logcat |grep \"frame_num = 900\"" > $d/frame_num.log &
+	adb shell "timeout -t $t -s INT logcat |grep \"frame_num = 450\"" > $d/frame_num.log &
 	adb pull $(run) $d/
 	#adb shell /data/logcat.sh &
 	cp gst-b2.mk $d/
@@ -70,6 +77,32 @@ run_it:
 	-adb pull /data/gst.GST_STATE_PLAYING.log $d/
 	-adb pull /data/gst.GST_STATE_PLAYING.dmesg $d
 	-adb pull /data/gst.GST_STATE_PLAYING-last.dmesg $d
+	-adb pull /data/gst-event.log $d/
+
+# Two use case in gst-c2.2.3
+#
+#   $grep -e ProcessRequest logcat.mk.log|grep 'chiFrameNum: 333'
+#
+# 2022-05-29-04-02-gst-c2.2.3-10hr-vlc-ok $ grep -e ProcessRequest logcat.mk.log|grep 'chiFrameNum: 333'
+# 02-07 06:14:34.727  2474  3342 E CamX    : [REQMAP][CORE   ] camxsession.cpp:2660 ProcessRequest() chiFrameNum: 333  <==>  requestId: 334  <==>  sequenceId: 333  <==> CSLSyncId: 334  -- Preview_0
+# 02-07 06:14:34.768  2474  3344 E CamX    : [REQMAP][CORE   ] camxsession.cpp:2660 ProcessRequest() chiFrameNum: 333  <==>  requestId: 334  <==>  sequenceId: 333  <==> CSLSyncId: 334  -- OfflineYUVTOJPEG_0
+#
+#
+# Sensor mode 
+#   $ cat logcat.mk.log|grep 'Selected Usecase'
+#
+#   02-07 06:15:13.843  2530  2530 E CHIUSECASE: [CONFIG ] chxsensorselectmode.cpp:626 FindBestSensorMode() Selected Usecase: 7, SelectedMode W=1920, H=1084, FPS:90, NumBatchedFrames:0, modeIndex:7
+#
+#
+# 
+fail_log_get:
+	#[ -d "$d" ] || (echo use $@ d=<dir>; exit 1)
+	[ -d "$d" ] || (echo "use $@ d=<dir>";exit 1)
+	adb pull /data/logcat.mk.log $d/logcat.mk.log
+	-adb pull /data/gst.GST_STATE_PLAYING-last.log $d/
+	-adb pull /data/gst.GST_STATE_PLAYING.log $d/
+	-adb pull /data/gst.GST_STATE_PLAYING.dmesg $d/
+	-adb pull /data/gst.GST_STATE_PLAYING-last.dmesg $d/
 	-adb pull /data/gst-event.log $d/
 
 vlc:
