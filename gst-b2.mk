@@ -26,9 +26,12 @@ upload_files:
 	adb push gst-b1 /data/
 	adb push gst-b2 /data/
 	adb push gst-b3 /data/
+	adb push gst-c1 /data/
 	adb push gst-c2.1 /data/
 	adb push gst-c2.2 /data/
 	adb push gst-c2.2.1 /data/
+	adb push gst-c2.2.2 /data/
+	adb push gst-c2.2.3 /data/
 	adb push gst-c2.3 /data/
 	adb push gst-c2.4 /data/
 	adb push gst-c3 /data/
@@ -36,6 +39,7 @@ upload_files:
 	adb push gst-d1 /data/
 	adb push gst-a /data/
 	adb push memleak.sh /data/
+	adb push gst-event /data/
 	adb push logcat.sh /data/
 	adb push gst-pipeline-app  /data/
 dot_get:
@@ -61,6 +65,9 @@ run_it:
 	#adb pull  /data/logcat.round.log $d/
 	adb shell killall gst-pipeline-app
 	adb pull /data/logcat.mk.log $d/logcat.mk.log
+	-adb pull /data/gst.GST_STATE_PLAYING-last.log $d/
+	-adb pull /data/gst.GST_STATE_PLAYING.log $d/
+	-adb pull /data/gst-event.log $d/
 
 vlc:
 	while true; do date; mpv rtsp://127.0.0.1:8900/live; echo "respwan"; sleep 10;done

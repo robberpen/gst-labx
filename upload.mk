@@ -7,16 +7,17 @@ TP ?=$(shell dirname $T)
 
 #T=$(TP)/$(TF)
 ORIG_DIR=orig
-
+SO=SO
 help lib_upload_help:
 	@echo "init_once	: backup orignal file and get md5sum"
 	@echo "unlock_rw	: adb disable-verity"
 	@echo "remount		: adb shell mount -o remount,rw /"
 	@echo "upload		: adb push $(TF) $T"
+	@echo "init_oncex	: multiple .so back and md5sum, eg: make -f upload.mk init_oncex SO=SO/"
+	@echo "uploadx		: multiple .so to /usr/lib, eg: make -f upload.mk uploadx SO=SO/"
 	@echo "rollback		: adb push $(ORIG_DIR)/$(TF) $T"
 	@echo "for example: make -f upload.mk init_once T=/usr/lib/camera/components/com.qti.offline.jpeg.so"
 	@echo "for example: make -f upload.mk upload T=/usr/lib/camera/components/com.qti.offline.jpeg.so"
-
 info:
 	@echo "T:$T"
 	@echo "TP:$(TP)"
@@ -55,6 +56,28 @@ __upload:
 
 upload: remount  __upload
 
+init_oncex:
+	find "$(SO)/" -name "*.so" | while read x; do \
+		b=$$(basename $$x); echo $$b;	\
+		t=$$(adb shell find /usr/lib -name $$b |tr -d '\r') ;\
+		echo "$$b at $$t"; \
+		if [ "$$t" = "" ] ;then echo "Not found"; continue; fi;\
+		adb shell find /usr/lib/ -name $$b | tr -d '\r' | xargs -i adb pull {} $$x.orig; \
+		md5sum $$x.orig > $$x.orig.md5sum; \
+	done
+
+uploadx:
+	find $(SO) -name "*.so" | while read x; do \
+		b=$$(basename $$x); \
+		t=$$(adb shell find /usr/lib -name $$b |tr -d '\r') ;\
+		echo "$$b at $$t"; \
+		if [ "$$t" = "" ] ;then echo "Not found"; continue; fi;\
+		adb push $$x $$t ;\
+		md5sum $$x > $$x.md5sum ;\
+	done
+		#adb shell find /usr/lib/ -name $$b || echo $$b no found && continue; | tr -d '\r' | xargs -i echo adb push $$x  {}; \
+		#md5sum $$x > $$x.md5sum;	\
+		#
 __rollback:
 	adb push $(ORIG_DIR)/$(TF) $T
 	adb shell md5sum $(T)
