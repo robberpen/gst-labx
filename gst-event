@@ -25,9 +25,8 @@ case $1 in
     kill $dmesg_pid
     logcat -c
     logcat -b kernel -c
-    [ ! -s /data/gst.GST_STATE_PLAYING.log ] && exit 0
+    [ -s /data/gst.GST_STATE_PLAYING.log ] && mv /data/gst.GST_STATE_PLAYING.log /data/gst.GST_STATE_PLAYING-last.log
     [ -s /data/gst.GST_STATE_PLAYING.dmesg  ] && mv /data/gst.GST_STATE_PLAYING.dmesg /data/gst.GST_STATE_PLAYING-last.dmesg
-    mv /data/gst.GST_STATE_PLAYING.log /data/gst.GST_STATE_PLAYING-last.log
     logcat |head -n 100000 > /data/gst.GST_STATE_PLAYING.log &
     logcat_pid=$!
     logcat -b kernel -v time  |head -n 100000 > /data/gst.GST_STATE_PLAYING.dmesg &

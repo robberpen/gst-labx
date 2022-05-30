@@ -53,6 +53,7 @@ dot_get:
 # Selected Usecase to get playing stat
 run_it:
 	@adb root;sleep 5; mkdir $d
+	adb shell "rm /data/gst.GST_STATE_PLAYING*"
 	adb logcat -c;adb shell "timeout -t $(logcat_t0) -s INT logcat > /data/logcat.mk.log" &
 	adb shell "$(run)"  > $d/runit.log &
 	adb shell "timeout -t $t -s INT /data/memleak.sh" |tee $d/memleak.log &
@@ -67,6 +68,8 @@ run_it:
 	adb pull /data/logcat.mk.log $d/logcat.mk.log
 	-adb pull /data/gst.GST_STATE_PLAYING-last.log $d/
 	-adb pull /data/gst.GST_STATE_PLAYING.log $d/
+	-adb pull /data/gst.GST_STATE_PLAYING.dmesg $d
+	-adb pull /data/gst.GST_STATE_PLAYING-last.dmesg $d
 	-adb pull /data/gst-event.log $d/
 
 vlc:
