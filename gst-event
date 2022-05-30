@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# This script excuted by customized gst-pipeline-app
+# $1: statusID, $2: The round of playing.
+
+echo $* >> /data/gst-event.log
+#env >> /data/gst-event.log
+
+[ "$1" = "" ] && exit 1
+
+[ "$2" -lt 10 ] && exit 0
+case $1 in
+  "0")
+    echo "GST_STATE_NULL"
+    ;;
+  "FFFF0001")
+    echo "GST_STATE_READY_TO_PLAYING"
+    ;;
+  "FFFF0002")
+    echo "GST_STATE_READY_TO_NULL"
+    ;;
+  "00000004")
+    echo "GST_STATE_PLAYING"
+    kill $logcat_pid
+    kill $dmesg_pid
+    logcat -c
+    logcat -b kernel -c
+    [ ! -s /data/gst.GST_STATE_PLAYING.log ] && exit 0
+    [ -s /data/gst.GST_STATE_PLAYING.dmesg  ] && mv /data/gst.GST_STATE_PLAYING.dmesg /data/gst.GST_STATE_PLAYING-last.dmesg
+    mv /data/gst.GST_STATE_PLAYING.log /data/gst.GST_STATE_PLAYING-last.log
+    logcat |head -n 100000 > /data/gst.GST_STATE_PLAYING.log &
+    logcat_pid=$!
+    logcat -b kernel -v time  |head -n 100000 > /data/gst.GST_STATE_PLAYING.dmesg &
+    dmesg_pid=$!
+    echo "logcat_pid: $logcat_pid" >> /data/gst-event.log
+    ;;
+  *)
+      break
+   ;;
+esac
+#/data # cat gst-event.log
+#00000001 715
+#other 00000001
+#FFFF0001 715
+#other FFFF0001
+#00000004 716
+#playing
+#FFFF0002 716
+#other FFFF0002
+#00000001 716
+#other 00000001
+#FFFF0001 716
+#other FFFF0001
+
