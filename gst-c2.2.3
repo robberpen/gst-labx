@@ -14,7 +14,9 @@
 # Based gst-b2.2.1 +qtivtransform, +qtivcomposer, +qtijpegenc
 # -"video_3::source-index=0 video_4::source-index=0" 30fps
 
-export GST_DEBUG=4
+export GST_PLAY_DUR=15
+export GST_READY_DUR=3
+#export GST_DEBUG=4
 /data/gst-pipeline-app --gst-debug-no-color -e qtiqmmfsrc name=qmmf0 camera=0 \
 video_1::source-index=0 \
 video_2::source-index=0 ! \

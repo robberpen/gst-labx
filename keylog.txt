@@ -1,0 +1,39 @@
+keyword list
+--------------
+
+SubmitRequest: Can't get stream buffer, skip this request: Connection timed out (-110)
+
+
+
+--- Fail case timeout from logcat. frame 12 iw roking but frame 13 timeout.
+
+ 758 02-07 07:52:23.262  2492  3411 V CHIDEFOG: ProcessRequest():831 ProcessRequest frame_num = 11 defog 0
+ 759 02-07 07:52:23.262  2492  3411 I CHIDEFOG: ProcessRequest():846 Sensor frame rate 30 SHDR : 0
+ 760 02-07 07:52:23.262  2492  3411 V CHIDEFOG: ProcessRequest():863 satisfied = 0
+ 761 02-07 07:52:23.277  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(2): BufInfo: ion_fd(133), vaddr(0x7f01ee6000), size(3137536)
+ 762 02-07 07:52:23.278  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(3): BufInfo: ion_fd(127), vaddr(0x7f018ea000), size(3137536)
+ 763 02-07 07:52:23.278  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(1): BufInfo: ion_fd(131), vaddr(0x7f012ee000), size(3137536)
+ 764 02-07 07:52:23.296  2492  3412 E CamX    : [ERROR][CHI    ] camxchinodewrapper.cpp:2185 ExecuteProcessRequest() Node::Preview_ChiNodeWrapper0 i=0, Output Po     rt/Image Buffer is Null
+ 765 02-07 07:52:23.296  2492  3412 V CHIDEFOG: ProcessRequest():831 ProcessRequest frame_num = 12 defog 0
+ 766 02-07 07:52:23.296  2492  3412 I CHIDEFOG: ProcessRequest():846 Sensor frame rate 30 SHDR : 0
+ 767 02-07 07:52:23.296  2492  3412 V CHIDEFOG: ProcessRequest():863 satisfied = 0
+ 768 02-07 07:52:23.310  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(2): BufInfo: ion_fd(137), vaddr(0x7f00cf2000), size(3137536)
+ 769 02-07 07:52:23.311  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(3): BufInfo: ion_fd(135), vaddr(0x7f006f6000), size(3137536)
+ 770 02-07 07:52:23.311  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(1): BufInfo: ion_fd(139), vaddr(0x7f000fa000), size(3137536)
+ 771 02-07 07:52:23.329  2492  3408 E CamX    : [ERROR][CHI    ] camxchinodewrapper.cpp:2185 ExecuteProcessRequest() Node::Preview_ChiNodeWrapper0 i=0, Output Po     rt/Image Buffer is Null
+ 772 02-07 07:52:23.329  2492  3408 V CHIDEFOG: ProcessRequest():831 ProcessRequest frame_num = 13 defog 0
+ 773 02-07 07:52:23.329  2492  3408 I CHIDEFOG: ProcessRequest():846 Sensor frame rate 30 SHDR : 0
+ 774 02-07 07:52:23.329  2492  3408 V CHIDEFOG: ProcessRequest():863 satisfied = 0
+ 775 02-07 07:52:23.344  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(2): BufInfo: ion_fd(143), vaddr(0x7effafe000), size(3137536)
+ 776 02-07 07:52:23.344  2492 15495 I         : AllocBuffer: Using color space: ITU_R_601
+ 777 02-07 07:52:23.344  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(3): BufInfo: ion_fd(141), vaddr(0x7eff502000), size(3137536)
+ 778 02-07 07:52:23.344  2492 15495 I         : AllocBuffer: Color Primaries 5, Color Range 1, Gamma Transfer 6, Matrix Coefficients 5
+ 779 02-07 07:52:23.345  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(1): BufInfo: ion_fd(145), vaddr(0x7efef06000), size(3137536)
+ 780 02-07 07:52:23.348  3367  4147 I RecorderClient: NotifyVideoTrackData track_id(4): BufInfo: ion_fd(149), vaddr(0x7efeaae000), size(1417216)
+ 781 02-07 07:52:24.111  2492 15463 E Camera3Stream: GetBuffer: wait for output buffer return timed out
+ 782 02-07 07:52:24.111  2492 15463 E Camera3Stream: PrintBuffersInfoLocked: Stream id: 0 dim: 1920x1080, fmt: 34 Buffers: HAL(0) Client(12) Pending(12) Total(12     )
+ 783 02-07 07:52:24.111  2492 15463 E         : SubmitRequest: Can't get stream buffer, skip this request: Connection timed out (-110)
+ 784 02-07 07:52:24.111  2492 15463 W RecorderCameraContext: CameraErrorCb: Camera: 0, Error: 2, Request: 3, FrameNumber: 13
+ 785 02-07 07:52:24.111  2492 15463 W RecorderCameraContext: CameraErrorCb: Frame 13 returned with error! Notify all threads waiting for pending frames!!
+ 786 02-07 07:52:25.111  2492 15463 E Camera3Stream: GetBuffer: wait for output buffer return timed out
+ 787 02-07 07:52:25.111  2492 15463 E Camera3Stream: PrintBuffersInfoLocked: Stream id: 0 dim: 1920x1080, fmt: 34 Buffers: HAL(0) Client(12) Pending(12) Total(12

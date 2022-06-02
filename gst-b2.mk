@@ -55,14 +55,17 @@ dot_get:
 		adb pull "$$f";\
 		dot -Tpng $$(filename $$f) -o  $d/$$(filename $$f).png ;\
 	done
-
+#split -l 1000000 -  logcat   --numeric-suffixes=0 -a 1 --additional-suffix=.log
 # Selected Usecase to get playing stat
 run_it:
 	@adb root;sleep 5; mkdir $d
 	adb shell "rm /data/gst.GST_STATE_PLAYING*"
+	adb shell "rm /data/*.pid"
+	adb shell "rm /data/coredump/*"
 	adb shell rm /data/gst-event.log
 	adb logcat -c;adb shell "timeout -t $(logcat_t0) -s INT logcat > /data/logcat.mk.log" &
-	adb shell "$(run)"  > $d/runit.log &
+	#adb shell "$(run)"  > $d/runit.log &
+	adb shell "$(run)" | split -l 200000 -  $d/logcat   --numeric-suffixes=0 -a 3 --additional-suffix=.log &
 	adb shell "timeout -t $t -s INT /data/memleak.sh" |tee $d/memleak.log &
 	adb shell "timeout -t $t -s INT logcat |grep \"frame_num = 450\"" > $d/frame_num.log &
 	adb pull $(run) $d/
@@ -79,6 +82,23 @@ run_it:
 	-adb pull /data/gst.GST_STATE_PLAYING-last.dmesg $d
 	-adb pull /data/gst-event.log $d/
 
+fail_log_get:
+	#[ -d "$d" ] || (echo use $@ d=<dir>; exit 1)
+	[ -d "$d" ] || (echo "use $@ d=<dir>";exit 1)
+	adb pull /data/logcat.mk.log $d/logcat.mk.log
+	-adb pull /data/gst.GST_STATE_PLAYING-last.log $d/
+	-adb pull /data/gst.GST_STATE_PLAYING.log $d/
+	-adb pull /data/gst.GST_STATE_PLAYING.dmesg $d/
+	-adb pull /data/gst.GST_STATE_PLAYING-last.dmesg $d/
+	-adb pull /data/gst-event.log $d/
+	-adb pull /data/coredump/ $d/
+
+vlc:
+	while true; do date; mpv rtsp://127.0.0.1:8900/live; echo "respwan"; sleep 10;done
+
+init_after_reboot: rtsp_server
+init_once: upload_files
+
 # Two use case in gst-c2.2.3
 #
 #   $grep -e ProcessRequest logcat.mk.log|grep 'chiFrameNum: 333'
@@ -94,19 +114,18 @@ run_it:
 #   02-07 06:15:13.843  2530  2530 E CHIUSECASE: [CONFIG ] chxsensorselectmode.cpp:626 FindBestSensorMode() Selected Usecase: 7, SelectedMode W=1920, H=1084, FPS:90, NumBatchedFrames:0, modeIndex:7
 #
 #
-# 
-fail_log_get:
-	#[ -d "$d" ] || (echo use $@ d=<dir>; exit 1)
-	[ -d "$d" ] || (echo "use $@ d=<dir>";exit 1)
-	adb pull /data/logcat.mk.log $d/logcat.mk.log
-	-adb pull /data/gst.GST_STATE_PLAYING-last.log $d/
-	-adb pull /data/gst.GST_STATE_PLAYING.log $d/
-	-adb pull /data/gst.GST_STATE_PLAYING.dmesg $d/
-	-adb pull /data/gst.GST_STATE_PLAYING-last.dmesg $d/
-	-adb pull /data/gst-event.log $d/
-
-vlc:
-	while true; do date; mpv rtsp://127.0.0.1:8900/live; echo "respwan"; sleep 10;done
-
-init_after_reboot: rtsp_server
-init_once: upload_files
+# trace thread:
+# /data # ps -T|grep pipeline-app|wc -l
+# 23
+#
+#  $ grep 'wait for output buffer return timed out' * -rB1
+#
+#  logcat.log-01-26 07:58:54.473  2954  7433 D QC_CORE : OMXCORE: qc_omx_component_fill_this_buffer 0x7f7c0138c8, 0x7f94018000
+#  logcat.log:01-26 07:58:55.160  2588  7410 E Camera3Stream: GetBuffer: wait for output buffer return timed out
+#  --
+#  logcat.log-01-26 07:58:55.160  2588  7410 W RecorderCameraContext: CameraErrorCb: Frame 13 returned with error! Notify all threads waiting for pending frames!!
+#  logcat.log:01-26 07:58:56.161  2588  7410 E Camera3Stream: GetBuffer: wait for output buffer return timed out
+#  --
+#  logcat.log-01-26 07:58:56.161  2588  7410 W RecorderCameraContext: CameraErrorCb: Frame 14 returned with error! Notify all threads waiting for pending frames!!
+#  logcat.log:01-26 07:58:57.161  2588  7410 E Camera3Stream: GetBuffer: wait for output buffer return timed out
+#
