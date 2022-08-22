@@ -11,13 +11,15 @@ export GST_PLAY_DUR=10
 export GST_READY_DUR=2
 export GST_DEBUG=0
 export GST_ROUND=1440
-#export GST_DEBUG=qtivcomposer:0
+# export GST_DEBUG=qtivcomposer:0
 # Enabled change resolution, 0 is disabled
 export GST_CAP_TOGGLE=1
 
-# element capfilter's name must be "Cap1", "Cap2", "Cap3" ..
-export GST_DEBUG_DUMP_DOT_DIR=/data/dot
+rm -fr   /data/dot
 mkdir -p /data/dot
+export GST_DEBUG_DUMP_DOT_DIR=/data/dot
+
+# element capfilter's name must be "Cap1", "Cap2", "Cap3" ..
 export GST_CAP_NAME=Cap
 export GST_CAP1="video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1"
 export GST_CAP2="video/x-raw(memory:GBM),format=NV12,width=1280,height=720,framerate=30/1"
