@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# gst-a1: based on gst-a, reduce 30 fps, enbale debug
+
+export GST_DEBUG=4
+/data/gst-pipeline-app -e qtiqmmfsrc name=qmmf0 camera=0 video_1::source-index=0 \
+video_2::source-index=0 video_3::source-index=0 video_4::source-index=0 ! \
+"video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" ! qtivcomposer name=mix \
+sink_0::position="<0, 270>" sink_0::dimensions="<960, 540>" \
+sink_1::position="<960, 270>" sink_1::dimensions="<960, 540>" \
+mix. ! "video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" ! \
+omxh264enc target-bitrate=32000000 control-rate=2 interval-intraframes=29 ! \
+h264parse config-interval=-1 ! rtph264pay pt=96 ! udpsink host=127.0.0.1 port=8554 \
+qmmf0. ! "video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" ! mix. \
+qmmf0. ! "video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" ! qtivcomposer name=mix1 \
+sink_0::position="<0, 270>" sink_0::dimensions="<960, 540>" \
+sink_1::position="<960, 270>" sink_1::dimensions="<960, 540>" \
+mix1. ! "video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" ! qtijpegenc ! fakesink \
+qmmf0. ! "video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" ! mix1. \
+qmmf0. ! video/x-raw,format=NV12,width=1280,height=720,framerate=10/1 ! \
+qtivtransform ! "video/x-raw, format=RGB, width=(int)416, height=(int)416, framerate=10/1" ! fakesink

@@ -47,14 +47,12 @@ upload_files:
 	adb push memleak.sh /data/
 	adb push gst-event /data/
 	adb push logcat.sh /data/
+	adb push gst-a-r.sh /data/
 	adb push gst-pipeline-app  /data/
 dot_get:
-	sleep 30
-	adb shell "ls --color=never /data/dot/*PLAYING.dot"|tr -d '\r'| while read f;\
-	do \
-		adb pull "$$f";\
-		dot -Tpng $$(filename $$f) -o  $d/$$(filename $$f).png ;\
-	done
+	mkdir -p dot; cd dot; rm "*" -f; adb pull /data/dot .
+	for i in dot/*.dot; do dot -Tpng $$i -o $${i}.png; done
+
 #split -l 1000000 -  logcat   --numeric-suffixes=0 -a 1 --additional-suffix=.log
 # Selected Usecase to get playing stat
 run_it:
@@ -65,7 +63,7 @@ run_it:
 	adb shell rm /data/gst-event.log
 	adb logcat -c;adb shell "timeout -t $(logcat_t0) -s INT logcat > /data/logcat.mk.log" &
 	#adb shell "$(run)"  > $d/runit.log &
-	adb shell "$(run)" | split -l 200000 -  $d/logcat   --numeric-suffixes=0 -a 3 --additional-suffix=.log &
+	adb shell "$(run)" | split -l 200000 -  $d/gst-log   --numeric-suffixes=0 -a 3 --additional-suffix=.log &
 	adb shell "timeout -t $t -s INT /data/memleak.sh" |tee $d/memleak.log &
 	adb shell "timeout -t $t -s INT logcat |grep \"frame_num = 450\"" > $d/frame_num.log &
 	adb pull $(run) $d/
