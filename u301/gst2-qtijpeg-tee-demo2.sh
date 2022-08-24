@@ -7,11 +7,22 @@
 
 # Bssed on gst2-qtijpeg-tee-demo.sh
 # 1. Removed change resolution on fakesink.
-# 2. Add 1080p,720p on RTSP_CAP
+# 2. Add 1080p,720p on RTSP_CAP with  [ qtivtransform ! capsfilter caps="..." name=RTSP_CAP... ]
 
 
 # Test report
-# 220822 U301 segfailure 115r, coredump:core.VideoEncMsgThre  core.gst-pipeline-ap
+# 220822 U301
+# 115r segfailure, coredump:core.VideoEncMsgThre  core.gst-pipeline-ap
+# 528r PLAYING to READY suspend(msg: Can't get stream buffer, skip this request: Connection timed out)
+# 200r segfailure:
+#
+#   ERROR: from element /GstPipeline:pipeline0/GstOMXH264Enc-omxh264enc:omxh264enc-omxh264enc0: GStreamer encountered a general supporting library erro$
+#   Additional debug info:
+#   ../../gst-omx-1.14.4/omx/gstomxvideoenc.c(2086): gst_omx_video_enc_loop (): /GstPipeline:pipeline0/GstOMXH264Enc-omxh264enc:omxh264enc-omxh264enc0:
+#   OpenMAX component in error state Hardware (0x80001009)
+#
+# 45r, segfailure.
+#
 export GST_PLAY_DUR=10
 export GST_READY_DUR=2
 export GST_DEBUG=0
