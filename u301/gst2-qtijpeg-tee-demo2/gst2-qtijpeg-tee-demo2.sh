@@ -22,7 +22,14 @@
 #   OpenMAX component in error state Hardware (0x80001009)
 #
 # 45r, segfailure.
-#
+# 13r, 14r. segfailure.
+# Pipeline state changed from READY to PAUSED, pending: PLAYING
+# Pipeline is PREROLLING ...
+# Choose an option: weston_keyboard_set_focus  keyboard addr:0x7fdce6ffd8, surface addr:0x7fdce6ffd0, focus_resource_list:0x7fdce6ffe0
+# Segmentation fault (core dumped)
+# root@qcs610-odk-64:/data# 3
+
+
 export GST_PLAY_DUR=10
 export GST_READY_DUR=2
 export GST_DEBUG=0
@@ -60,6 +67,11 @@ rtsp_server()
 export XDG_RUNTIME_DIR=/dev/socket/weston
 #hdmi_up
 #rtsp_server
+
+# 220824 follow up Dev team requirment.
+export GST_DEBUG=GST_STATES:5,qtivcomposer:7
+export GST_DEBUG_FILE=/data/gst_vcomposer.log
+export GST_DEBUG_NO_COLOR=1
 
 /data/gst-pipeline-app -e qtiqmmfsrc name=qmmf0 camera=0 ! "video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" \
 ! queue ! tee name=t1 ! queue ! qtivcomposer name=mix sink_0::position="<49, 49>" sink_0::dimensions="<658, 370>" sink_1::position="<0, 0>" sink_1::dimensions="<1920, 1080>" \
