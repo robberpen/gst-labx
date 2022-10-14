@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# 220920 - copied from gst2-latency.sh, format pipeline
+# Peter: 220920 - copied from gst2-latency.sh, format pipeline
+# This is test 6 PIP + overlay issue.
 
 export GST_PLAY_DUR=10
 export GST_READY_DUR=2
@@ -92,46 +93,7 @@ CAPS_1080P()
 {
     echo 'capsfilter caps="video/x-raw(memory:GBM),format=NV12,width=1920,height=1080,framerate=30/1" name='$1
 }
-$GSTAPP $qmmfsrc0 ldc=1 ! $NV_1080P30 ! $waylandsink
-#$GSTAPP  $qmmfsrc0 ! $NV_1080P30 ! $(overlay_txt RTSP) ! queue ! $omx264 ! $rtsp
 
-# working, but unstable on VLC streams
-$GSTAPP \
-$qmmfsrc0     ! $NV_1080P30 ! $(overlay_txt HDMI) ! $mix6 ! queue ! $NV_1080P30 ! $waylandsink \
-qmmf0.video_1 ! $NV_1080P30 ! $(overlay_txt Mixer) ! mix6. \
-qmmf0.video_2 ! $NV_1080P30 ! $(tee t) ! queue ! mix6. \
-t. ! queue ! mix6. \
-t. ! queue ! mix6. \
-t. ! queue ! $omx264 ! $rtsp
-
-exit 0
-
-
-#t. ! queue ! $omx264 ! $rtsp
-
-exit 0
-#qmmf0.video_4 ! $NV_1080P30 ! $(overlay_txt a) ! mix6. \
-#qmmf0.video_5 ! $NV_1080P30 ! mix6.
-
-
-
-#gst-launch-1.0 -e qtiqmmfsrc name=qmmf ! "video/x-raw(memory:GBM),format=NV12,camera=0,width=1920,height=1080,framerate=30/1" ! \
-#tee name=t ! queue ! omxh264enc ! h264parse ! mp4mux ! queue ! filesink location="/data/mux.mp4" t. ! queue ! waylandsink sync=false fullscreen=true
-
-
-
-exit 0
-$GSTAPP $qmmfsrc0 ! $NV_1080P30 ! $waylandsink \
-qmmf0.video_1 ! $NV_1080P30 ! fakesink \
-qmmf0.video_2 ! $RAW_1080P30 ! $(tee T1) ! fakesink \
-T1. ! fakesink
-
-exit 0
-qmmf0.video_3 ! $NV_1080P30  ! $omx264 ! $rtsp \
-qmmf0.video_4 ! $NV_1080P30 ! qtijpegenc ! fakesink \
-qmmf0.video_5 ! $NV_1080P30 ! $omx264
-
-exit 0
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
@@ -144,47 +106,45 @@ echo 845000000 > /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
 echo 845000000 > /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
 echo performance > /sys/class/devfreq/soc:qcom,cpu-llcc-ddr-bw/governor
 
-$GSTAPP \
-$qmmfsrc0     ! $NV_1080P30 ! $mix6 ! queue ! $NV_1080P30 ! $waylandsink \
-qmmf0.video_1 ! $NV_1080P30 ! $(tee t) ! mix6. \
-t. ! queue ! $(overlay_txt a) ! mix6. \
-
-exit 0
-qmmf0.video_3 ! $NV_1080P30 ! mix6. \
-qmmf0.video_4 ! $NV_1080P30 ! $(overlay_txt b) ! mix6. \
-qmmf0.video_5 ! $NV_1080P30 ! mix6.
-
-
 sleep 1
-# 220921 - see 720P-MJ.png, 1080P-MJ.png
-# tested: 465r-segfail
+
+########################################
+#   Start test GST Here
+########################################
+
 export GST_DEBUG=GST_STATES:5,GST_PADS:5,task:5,qtivcomposer:6,aggregator:4 GST_DEBUG_FILE=/data/gst_vcomposer_trim.log GST_DEBUG_NO_COLOR=1
 
-#$GSTAPP $qmmfsrc0 ! $(CAPS_1080P "CAP0") ! $mix0 ! queue ! $(overlay_txt "HDMI") ! $(CAPS_1080P "CAP1") ! $waylandsink \
-#qmmf0.video_1 ! $NV_1080P30 ! $(overlay_txt "MMM") ! mix0.
+# LAB 221014 it is working in tee -> mixer, in case of mixer->tee is not working.
+# /data # cat /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage
+# 7 %
 
-#exit 0
-#$GSTAPP $qmmfsrc0 ! $(CAPS_1080P "CAP0") ! queue ! $(overlay_txt "RTSP") ! $(CAPS_1080P "CAP1") ! $omx264 ! $rtsp \
-#qmmf0.video_1 ! $NV_1080P30 ! $mix0 ! queue ! $NV_1080P30 ! $waylandsink \
-#qmmf0.video_2 ! $NV_1080P30 ! mix0.
-
-$GSTAPP $qmmfsrc0 ! $(CAPS_1080P "CAP0") ! queue ! $(overlay_txt "RTSP") ! $(CAPS_1080P "CAP1") ! $omx264 ! $rtsp \
-qmmf0.video_1 ! $(CAPS_1080P "CAP2") ! queue ! $(overlay_txt "JPEG")  ! $(CAPS_1080P "CAP3") ! qtijpegenc ! fakesink \
-qmmf0.video_2 ! $NV_1080P30 ! $mix0 ! queue ! $NV_1080P30 ! $waylandsink \
-qmmf0.video_3 ! $NV_1080P30 ! mix0.
-
-#qmmf0.video_4 ! $NV_720P5   ! qtivtransform ! jpegenc ! fakesink \
+qmmfsrc0="qtiqmmfsrc name=qmmf0 camera=0 video_2::source-index=0 video_3::source-index=0 video_4::source-index=0 video_5::source-index=0"
+# 
+$GSTAPP \
+$qmmfsrc0     ! $NV_1080P30 ! $(tee T) ! $NV_1080P30 ! $mix6 ! $(overlay_txt "HDMI") ! $NV_1080P30 ! $waylandsink \
+qmmf0.video_1 ! $NV_1080P30 ! $(overlay_txt "X") ! queue !  mix6. \
+qmmf0.video_2 ! $NV_1080P30 ! $(overlay_txt "V") ! mix6. \
+qmmf0.video_3 ! $NV_1080P30 ! $(overlay_txt "T") ! mix6. \
+qmmf0.video_4 ! $NV_1080P30 ! $(overlay_txt "TT") ! mix6. \
+qmmf0.video_5 ! $NV_1080P30 ! $(overlay_txt "TTT") ! mix6. \
+T. ! queue ! $omx264 ! $rtsp
+T. ! queue ! qtijpegenc ! fakesink
 
 exit 0
-# Tee only + queue working
+
+########################################
+#   Backup/History examples.
+########################################
+
+# LAB Tee only + queue working
 $GSTAPP $qmmfsrc0 ! $NV_1080P30 ! $(tee t) ! queue ! $omx264 ! filesink location="/data/mux.mp4" \
-t. ! queue ! waylandsink sync=false fullscreen=true \
+t. ! queue ! $mix6 waylandsink sync=false fullscreen=true \
 t. ! queue ! fakesink \
 t. ! queue ! fakesink \
 t. ! queue ! fakesink \
 
 
-# working, but overlay issue, depend on source-index
+# LAB working, but overlay issue, depend on source-index
 $GSTAPP \
 $qmmfsrc0     ! $NV_1080P30 ! $mix6 ! queue ! $NV_1080P30 ! $waylandsink \
 qmmf0.video_1 ! $NV_1080P30 ! mix6. \
@@ -194,7 +154,7 @@ qmmf0.video_4 ! $NV_1080P30 ! $(overlay_txt a) ! mix6. \
 qmmf0.video_5 ! $NV_1080P30 ! mix6.
 
 
-# working, but unstable on VLC streams
+# LAB working, but unstable on VLC streams
 $GSTAPP \
 $qmmfsrc0     ! $NV_1080P30 ! $(overlay_txt HDMI) ! $mix6 ! queue ! $NV_1080P30 ! $waylandsink \
 qmmf0.video_1 ! $NV_1080P30 ! $(overlay_txt RTSP) ! queue ! $omx264 ! $rtsp \
@@ -202,3 +162,42 @@ qmmf0.video_2 ! $NV_1080P30 ! $(tee t) ! queue ! mix6. \
 t. ! queue ! mix6. \
 t. ! queue ! mix6. \
 t. ! queue ! mix6.
+
+# LAB working test basic pipeline, side effect on 3~5 stream with overlay
+
+qmmfsrc0="qtiqmmfsrc name=qmmf0 camera=0 video_2::source-index=0 video_3::source-index=1 video_4::source-index=1 video_5::source-index=1"
+
+$GSTAPP \
+$qmmfsrc0     ! $NV_1080P30 ! $(overlay_txt "T") ! $mix6 ! queue ! $NV_1080P30 ! $waylandsink \
+qmmf0.video_1 ! $NV_1080P30 ! $(overlay_txt "C") ! mix6. \
+qmmf0.video_2 ! $NV_1080P30 ! $(overlay_txt "X") ! mix6. \
+qmmf0.video_3 ! $NV_1080P30 ! $(overlay_txt "F") ! mix6. \
+qmmf0.video_4 ! $NV_1080P30 ! $(overlay_txt "V") ! mix6. \
+qmmf0.video_5 ! $NV_1080P30 ! $(overlay_txt "OP") ! mix6.
+
+
+# LAB NA, cannot startup in  "overlay_txt Mix"
+qmmfsrc0="qtiqmmfsrc name=qmmf0 camera=0" 
+$GSTAPP $qmmfsrc0 ! $NV_1080P30 ! $(tee t) ! queue ! $mix6 ! $waylandsink \
+t. ! queue ! $omx264 ! filesink location="/data/mux.mp4" \
+t. ! queue ! $(overlay_txt Mix) ! mix6. \
+t. ! queue ! mix6. \
+t. ! queue ! mix6. \
+t. ! queue ! fakesink
+
+
+# LAB 221014 it is working in tee -> mixer, in case of mixer->tee is not working.
+# /data # cat /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage
+# 7 %
+
+qmmfsrc0="qtiqmmfsrc name=qmmf0 camera=0 video_2::source-index=0 video_3::source-index=0 video_4::source-index=0 video_5::source-index=0"
+# 
+$GSTAPP \
+$qmmfsrc0     ! $NV_1080P30 ! $(tee T) ! $NV_1080P30 ! $mix6 ! $(overlay_txt "HDMI") ! $NV_1080P30 ! $waylandsink \
+qmmf0.video_1 ! $NV_1080P30 ! $(overlay_txt "X") ! queue !  mix6. \
+qmmf0.video_2 ! $NV_1080P30 ! $(overlay_txt "V") ! mix6. \
+qmmf0.video_3 ! $NV_1080P30 ! $(overlay_txt "T") ! mix6. \
+qmmf0.video_4 ! $NV_1080P30 ! $(overlay_txt "TT") ! mix6. \
+qmmf0.video_5 ! $NV_1080P30 ! $(overlay_txt "TTT") ! mix6. \
+T. ! queue ! $omx264 ! $rtsp
+T. ! queue ! qtijpegenc ! fakesink
