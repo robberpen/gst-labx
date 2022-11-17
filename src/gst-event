@@ -45,6 +45,9 @@ case $1 in
     echo "logcat_pid: $logcat_pid  dmesg_pid:  $dmesg_pid" >> /data/gst-event.log
     free -m >> /data/gst-event.log
     top -n 1 -m m |grep -e gst-pipeline -e logd -e qmmf >> /data/gst-event.log
+    cat /sys/kernel/debug/dma_buf/bufinfo >> /data/dma/bufinfo.txt
+    cat /sys/kernel/debug/dma_buf/dmaprocs >> /data/dma/dmaprocs.txt
+    cat /proc/meminfo |head -n 3 >> /data/gst-event.log
     ;;
   *)
       break
