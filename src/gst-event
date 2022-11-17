@@ -9,6 +9,7 @@ echo $* >> /data/gst-event.log
 [ "$1" = "" ] && exit 1
 if [ "$2" -eq 1 ];then
     rm -f /data/gst-event.log
+    mkdir -p  /data/dma
 fi
 [ "$2" -lt 10 ] && exit 0
 case $1 in
