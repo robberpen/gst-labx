@@ -18,7 +18,7 @@ rm -f /data/coredump/*
 export GST_CAP_TOGGLE=1
 export GST_CAP_NAME=CAP%
 export GST_CAP1="video/x-raw(memory:GBM),format=NV12,width=3840,height=2160,framerate=30/1"
-export GST_CAP2="video/x-raw(memory:GBM),format=NV12,width=640,height=360,framerate=30/1"
+export GST_CAP2="video/x-raw(memory:GBM),format=NV12,width=3840,height=2160,framerate=30/1"
 
 export XDG_RUNTIME_DIR=/dev/socket/weston
 RTSP_SERVER_IP=127.0.0.1
@@ -82,15 +82,8 @@ killall logcat
 
 # 221027 221028: 1440r debugbuild pass(gstreamer1.0_1.14.4-r0_qcs610_odk_64.ipk,gstreamer1.0-plugins-qti-oss-base-dbg_1.0-r0_aarch64.ipk) \ 
 export GST_DEBUG=GST_STATES:5,GST_PADS:5,task:5,qtivcomposer:6,aggregator:4 GST_DEBUG_FILE=/data/gst_vcomposer_trim.log GST_DEBUG_NO_COLOR=1
-# based from gst2_emu_mj2_max_4kMJ1S.sh(working case), add mixer
-# 221111-gst2_emu_mj2_max_4kMJ1S_mixer.sh-r562-cam-died
-# 221112-gst2_emu_mj2_max_4kMJ1S_mixer.sh-r425-cam-died
-# 221112-gst2_emu_mj2_max_4kMJ1S_mixer.sh-r316-cam-died
-# reclaim images/page-onwer images
-# 221115-gst2_emu_mj2_max_4kMJ1S_mixer.sh-276r-killer
-# 221115-gst2_emu_mj2_max_4kMJ1S_mixer.sh-545r-blocked
-# 221116-gst2_emu_mj2_max_4kMJ1S_mixer.sh-686r-killer
-# 221117-gst2_emu_mj2_max_4kMJ1S_mixer.sh-622r-cam-died-killer/
+based on gst2_emu_mj2_max_4kMJ1S_mixer.sh
+# 221116-gst2_emu_mj2_max_4kMJ1S_mixer_4Kto4K.sh-248r-reboot
 $GSTAPP \
 $qmmfsrc0 ! $(CAPS_1080P "CAP0") ! $mix1 ! queue ! $overlay   ! $(CAPS_1080P "CAP1") ! qtijpegenc ! fakesink \
 $qmmfsrc1 ! $(CAPS_1080P "CAP2") ! mix1.

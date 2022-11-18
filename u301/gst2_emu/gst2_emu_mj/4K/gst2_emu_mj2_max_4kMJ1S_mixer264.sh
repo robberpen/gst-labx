@@ -89,6 +89,11 @@ export GST_DEBUG=GST_STATES:5,GST_PADS:5,task:5,qtivcomposer:6,aggregator:4 GST_
 # 221112-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-r1334r-chgfail/
 # 221114-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-r404-chgfail
 # 221114-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-404r-chgfail
+# reclaim images/page-onwer images
+#
+# 221116-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass/
+# 221117-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass/
+# 221117-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass2
 $GSTAPP \
 $qmmfsrc0 ! $(CAPS_1080P "CAP0") ! $mix1 ! queue ! $overlay   ! $(CAPS_1080P "CAP1") ! $omx264 ! fakesink \
 $qmmfsrc1 ! $(CAPS_1080P "CAP2") ! mix1.
