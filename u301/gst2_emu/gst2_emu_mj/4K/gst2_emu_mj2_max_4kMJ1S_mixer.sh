@@ -91,6 +91,9 @@ export GST_DEBUG=GST_STATES:5,GST_PADS:5,task:5,qtivcomposer:6,aggregator:4 GST_
 # 221115-gst2_emu_mj2_max_4kMJ1S_mixer.sh-545r-blocked
 # 221116-gst2_emu_mj2_max_4kMJ1S_mixer.sh-686r-killer
 # 221117-gst2_emu_mj2_max_4kMJ1S_mixer.sh-622r-cam-died-killer/
+# 221124 update 1124_oom_seg_perf
+# 221125-gst2_emu_mj2_max_4kMJ1S_mixer.sh-pass
+# 221125-gst2_emu_mj2_max_4kMJ1S_mixer.sh-pass
 $GSTAPP \
 $qmmfsrc0 ! $(CAPS_1080P "CAP0") ! $mix1 ! queue ! $overlay   ! $(CAPS_1080P "CAP1") ! qtijpegenc ! fakesink \
 $qmmfsrc1 ! $(CAPS_1080P "CAP2") ! mix1.

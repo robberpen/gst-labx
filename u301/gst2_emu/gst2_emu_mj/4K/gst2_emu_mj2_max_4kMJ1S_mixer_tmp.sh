@@ -2,8 +2,10 @@
 
 # 220920 - copied from gst2-latency.sh, format pipeline
 
-export GST_PLAY_DUR=3
-export GST_READY_DUR=2
+#export GST_PLAY_DUR=3
+export GST_PLAY_DUR=12
+#export GST_READY_DUR=2
+export GST_READY_DUR=8
 export GST_DEBUG=2
 export GST_ROUND=1440
 #export GST_DEBUG=qtivcomposer:6
@@ -81,23 +83,17 @@ killall logcat
 # 221021 seems not verify, checking...
 
 # 221027 221028: 1440r debugbuild pass(gstreamer1.0_1.14.4-r0_qcs610_odk_64.ipk,gstreamer1.0-plugins-qti-oss-base-dbg_1.0-r0_aarch64.ipk) \ 
-export GST_DEBUG=GST_STATES:5,GST_PADS:5,task:5,qtivcomposer:6,aggregator:4 GST_DEBUG_FILE=/data/gst_vcomposer_trim.log GST_DEBUG_NO_COLOR=1
-# based from gst2_emu_mj2_max_4kMJ1S.sh(working case), add mixer
-# 221111-gst2_emu_mj2_max_4kMJ1S_mixer.sh-r562-cam-died
-# 221112-gst2_emu_mj2_max_4kMJ1S_mixer.sh-r425-cam-died
-# 221112-gst2_emu_mj2_max_4kMJ1S_mixer.sh-r316-cam-died
-# 221112-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-r1334r-chgfail/
-# 221114-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-r404-chgfail
-# 221114-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-404r-chgfail
-# reclaim images/page-onwer images
-#
-# 221116-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass/
-# 221117-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass/
-# 221117-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass2
-# 221124 update 1124_oom_seg_perf image
-# 221126-gst2_emu_mj2_max_4kMJ1S_mixer264.sh-pass
+export GST_DEBUG=GST_STATES:5,GST_PADS:5,task:5,qtivcomposer:6,aggregator:4,qtijpegenc:7 GST_DEBUG_FILE=/data/gst_vcomposer_trim.log GST_DEBUG_NO_COLOR=1
+
+# base on gst2_emu_mj2_max_4kMJ1S_mixer, remove overlay
+# Test how about remove overly
+# 221122-gst2_emu_mj2_max_4kMJ1S_mixer_tmp.sh-9r-cam-died
+# 221122-gst2_emu_mj2_max_4kMJ1S_mixer_tmp.sh-12r-cam-died
+# 221123-gst2_emu_mj2_max_4kMJ1S_mixer_tmp.sh-8r-cam-died *
+# update 1124_oom_seg_perf
+# 221125-gst2_emu_mj2_max_4kMJ1S_mixer_tmp.sh-523r-block
 $GSTAPP \
-$qmmfsrc0 ! $(CAPS_1080P "CAP0") ! $mix1 ! queue ! $overlay   ! $(CAPS_1080P "CAP1") ! $omx264 ! fakesink \
+$qmmfsrc0 ! $(CAPS_1080P "CAP0") ! $mix1 ! queue ! $(CAPS_1080P "CAP1") ! qtijpegenc ! fakesink \
 $qmmfsrc1 ! $(CAPS_1080P "CAP2") ! mix1.
 
 killall logcat
