@@ -1,0 +1,46 @@
+gst-launch-1.0 videotestsrc \
+! videoconvert ! videoscale \
+! capsfilter caps="video/x-raw, width=640, height=480" \
+! autovideosink
+
+
+# study capfilter...
+gst-launch-1.0 videotestsrc !  "video/x-raw, width=480, height=320" ! autovideosink
+./gst-pipeline-app videotestsrc !  "video/x-raw, width=480, height=320" ! autovideosink
+
+
+
+export GST_CAP_TOGGLE=1
+export GST_CAP_NAME=capname
+export GST_CAP1="video/x-raw, width=480, height=320"
+export GST_CAP2="video/x-raw, width=480, height=480"
+
+./gst-test videotestsrc ! capsfilter caps="video/x-raw, width=480, height=320" name="capname" ! autovideosink
+
+export GST_CAP_TOGGLE=1
+export GST_CAP_NAME=Cap%
+export GST_CAP1="video/x-raw, width=480, height=320"
+export GST_CAP2="video/x-raw, width=480, height=480"
+
+./gst-test videotestsrc ! capsfilter caps="video/x-raw, width=480, height=320" name="Cap2" ! autovideosink
+
+
+export GST_DEBUG_DUMP_DOT_DIR=/tmp/
+export GST_CAP_TOGGLE=1
+export GST_CAP_NAME=capname
+export GST_CAP1="video/x-raw(memory:GBM),format=NV12,camera=0,width=1920,height=1080,framerate=30/1"
+export GST_CAP2="video/x-raw(memory:GBM),format=NV12,camera=0,width=640,height=480,framerate=30/1"
+export XDG_RUNTIME_DIR=/dev/socket/weston
+
+weston --tty=1 --device=hdmi --idle-time=0 &
+
+./gst-pipeline-app -e qtiqmmfsrc name=qmmf ! capsfilter caps="video/x-raw(memory:GBM),format=NV12,camera=0,width=1920,height=1080,framerate=30/1" name=capname ! waylandsink sync=false fullscreen=true
+
+
+
+export GST_CAP_TOGGLE=1
+export GST_CAP_NAME=capname
+export GST_CAP1="video/x-raw, width=480, height=320"
+export GST_CAP2="video/x-raw, width=480, height=480"
+
+./gst-test videotestsrc ! capsfilter caps="video/x-raw, width=480, height=320" name="Cap2" ! queue name="indicator" ! fakesink name=demosink
