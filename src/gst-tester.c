@@ -99,13 +99,16 @@ struct _GstAppContext
   // Asynchronous queue thread communication.
   GAsyncQueue *messages;
 };
-
+static gchar *dynamic_element_ini_path = "./test.ini";
 /// Command line option variables.
 static gboolean eos_on_shutdown = FALSE;
 
 static const GOptionEntry entries[] = {
     { "eos-on-shutdown", 'e', 0, G_OPTION_ARG_NONE, &eos_on_shutdown,
         "Send EOS event before transition from PLAYING to NULL state", NULL
+    },
+    { "ini-path", 'i', 0, G_OPTION_ARG_FILENAME, &dynamic_element_ini_path,
+        "dynamic element config .ini filename(default \"./test.ini\"", ".ini path"
     },
     {NULL}
 };
@@ -939,7 +942,6 @@ static void init_test_param()
     GST_round = atoi(e);
 }
 static void toggle_capfiler(GstElement *pipeline);
-static void debug_codec_change(GstElement * pipeline);
 int next_state(GstElement * pipeline, GAsyncQueue * messages, gchar ** input)
 {
   static int stm = GST_STATE_NULL;
@@ -958,8 +960,7 @@ int next_state(GstElement * pipeline, GAsyncQueue * messages, gchar ** input)
          *input = g_strdup(QUIT_OPTION);
       }
       toggle_capfiler(pipeline);
-      //debug_codec_change(pipeline);
-      list_roundtrip(pipeline);
+      dynamic_element_next(pipeline);
       sleep(GST_stat_ready_duration);
       break;
     case GST_STATE_READY_TO_PLAYING:
@@ -1184,109 +1185,7 @@ static void debug_resolution_scaling(GstElement * pipeline, const gchar *cap_nam
 out:
   return;
 }
-static void read_file(const char *fname)
-{
-  FILE *fd;
-  char buf[4096];
 
-  if ((fd = fopen(fname, "r")) == NULL)
-    return;
-  while(fgets(buf, sizeof(buf), fd) != NULL) {
-
-  }
-  fclose(fd);
-}
-static GstElement *debug_runtime_factory_make(const char *fname)
-{
-  //static int fd;
-  const char *str = "demosink:filesink location=/tmp/test.bin";
-
-  GstElement *el_new;
-  GParamSpec *propspecs;
-  GValue value = G_VALUE_INIT;
-  GError *error = NULL;
-  /*
-   * use gst_parse_bin_from_description() more flexible
-   */
-#if 1
-   //g_return_val_if_fail((el_new = gst_parse_bin_from_description("autovideosink name=demosink", TRUE, &error)) != NULL, NULL);
-   //g_return_val_if_fail((el_new = gst_parse_bin_from_description("queue name=demosink ! autovideosink", TRUE, &error)) != NULL, NULL);
-   /* queue after tee on autovdieosink is must. otherwise always hanged */
-   g_return_val_if_fail((el_new = gst_parse_bin_from_description("tee name=demosink ! queue ! autovideosink demosink. ! filesink location=/tmp/test.bin", TRUE, &error)) != NULL, NULL);
-
-#else
-
-  //g_return_val_if_fail((el_new = gst_element_factory_make ("autovideosink", "demosink")) != NULL, NULL);
-  g_return_val_if_fail((el_new = gst_element_factory_make ("filesink", "demosink")) != NULL, NULL);
-  if ((propspecs = g_object_class_find_property(G_OBJECT_GET_CLASS (el_new), "location")) == NULL)
-    goto err;
-  g_printerr("%s %d: PTM\n", __FUNCTION__, __LINE__);
-
-  g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (propspecs));
-
-  g_return_val_if_fail(gst_value_deserialize(&value, "/tmp/test.bin"), NULL);
-  g_object_set_property (G_OBJECT (el_new), "location", &value);
-  g_printerr("%s %d: PTM\n", __FUNCTION__, __LINE__);
-#endif
-  return el_new;
-err:
-  if (el_new)
-    gst_object_unref(el_new);
-
-  g_printerr("%s %d: Error\n", __FUNCTION__, __LINE__);
-  return NULL;
-}
-//debug_codec_change(pipeline, "demosink", "filesink");
-//static void debug_codec_change(GstElement * pipeline, const gchar *el_from, const gchar *el_to)
-static void debug_codec_change(GstElement * pipeline)
-{
-  GstElement *el, *indicator = NULL;
-
-  GstElement *demosink  = NULL;
-
-  //if (demosink == NULL)
-  //  g_return_if_fail((demosink = gst_element_factory_make ("autovideosink", "demosink")) != NULL);
-  
-  if (demosink == NULL)
-    g_return_if_fail((demosink = debug_runtime_factory_make ("")) != NULL);
-
-  if (indicator == NULL) // FIXME: leak without relese @demosink
-    g_return_if_fail((indicator = gst_bin_get_by_name(GST_BIN (pipeline), "indicator")) != NULL);
-  
-  if ((el = gst_bin_get_by_name (GST_BIN (pipeline), "demosink")) == NULL) {
-     g_printerr ("Invalid cap name:%s\n", "demosink");
-     goto out;
-  } else {
-     g_printerr("Get Name:%s\n", "demosink");
-     g_printerr("Get ref el: %d\n", ((GObject *) el)->ref_count);
-     
-     g_return_if_fail(gst_bin_remove (GST_BIN (pipeline), el));
-     g_return_if_fail(gst_bin_add(GST_BIN (pipeline), demosink));
-     gst_element_unlink(indicator, el);
-     g_return_if_fail(gst_element_link(indicator, demosink));
-     g_printerr("Get ref el: %d\n", ((GObject *) el)->ref_count);
-     g_printerr("Get ref indicator: %d\n", ((GObject *) indicator)->ref_count);
-     g_printerr("Get ref demosink : %d\n", ((GObject *) demosink)->ref_count);
-     //gst_object_unref(indicator);
-     gst_element_set_state (el, GST_STATE_NULL);
-     //gst_object_unref(el);
-     g_printerr("unref\nGet ref el: %d\n", ((GObject *) el)->ref_count);
-     g_printerr("Get ref indicator: %d\n", ((GObject *) indicator)->ref_count);
-  }
-out:
-  if (el)
-     gst_object_unref (el);
-  if (indicator)
-     gst_object_unref (indicator);
-  return;
-
-}
-
-
-static void __debug_codec_change(GstElement * pipeline)
-{
-  list_roundtrip();
-}
 /*
  * Tested example:
  * export GST_CAP_TOGGLE=1
@@ -1476,7 +1375,7 @@ main (gint argc, gchar *argv[])
     gst_app_context_free (appctx);
     return -1;
   }
-  dyanmic_elements_init("./test.ini");
+  dyanmic_elements_init(dynamic_element_ini_path);
   // Register handing function with the main loop for stdin channel data.
   stdin_watch_id = g_io_add_watch (
       iostdin, G_IO_IN | G_IO_PRI, handle_stdin_source, appctx);

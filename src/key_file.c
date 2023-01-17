@@ -159,7 +159,7 @@ static int __list_roundtrip(struct gst_element_hash *h, int (*fn)(GstElement *, 
   return 0;
 }
 
-int list_roundtrip(void *userdata)
+int dynamic_element_next(void *userdata)
 {
   return __list_roundtrip(Gst_slist_head, fn_relink_bin, userdata);
 }
@@ -243,12 +243,13 @@ int main(int argc, char *argv)
   dyanmic_elements_init("./test.ini");
   dump_gst_element_hashs(Gst_slist_head);
 
-  list_roundtrip(NULL);
-  list_roundtrip(NULL);
-  list_roundtrip(NULL);
-  list_roundtrip(NULL);
-  list_roundtrip(NULL);
-  list_roundtrip(NULL);
+  dyanmic_elements_next(NULL);
+  dyanmic_elements_next(NULL);
+  dyanmic_elements_next(NULL);
+  dyanmic_elements_next(NULL);
+  dyanmic_elements_next(NULL);
+  dyanmic_elements_next(NULL);
+  dyanmic_elements_next(NULL);
   return 0;
 }
 #endif
