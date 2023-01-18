@@ -1,6 +1,28 @@
 
-CFLAGS ?= -g -O0 -pthread -I/usr/include/gstreamer-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include/
+#CC_SYSROOT=/usr/local/oecore-x86_64/sysroots/aarch64-oe-linux
+
+#QCS610=1
+ifeq ($(QCS610), 1)
+
+CC_SYSROOT=/media/peter/Docker/QCS610LE/toolchain/sysroots/aarch64-oe-linux
+CC=aarch64-oe-linux-gcc --sysroot=$(CC_SYSROOT) -lpthread  -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0  -pthread \
+
+CFLAGS += -g -pthread \
+-I$(CC_SYSROOT)/usr/lib/glib-2.0/include/ \
+-I$(CC_SYSROOT)/usr/include/glib-2.0 \
+-I$(CC_SYSROOT)/usr/include/gstreamer-1.0/ \
+-I$(CC_SYSROOT)/usr/include/
+
+else
+CFLAGS ?= -g -O0 -pthread -I/usr/include/gstreamer-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+-I/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include/
+endif
+
 LDFLAGS ?= -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0
+
+help:
+	@echo "make all               for x86 test"
+	@echo "make all QCS610=1      for target platform"
 
 all: gst-tester gst-pipeline-app
 
