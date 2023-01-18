@@ -42,5 +42,8 @@ export GST_CAP_TOGGLE=1
 export GST_CAP_NAME=capname
 export GST_CAP1="video/x-raw, width=480, height=320"
 export GST_CAP2="video/x-raw, width=480, height=480"
+export GST_PLAY_DUR=5
+# simple test
+# ./gst-tester videotestsrc ! capsfilter caps="video/x-raw, width=480, height=320" name="Cap2" ! queue name="indicator" ! fakesink name=demosink
+# see test.ini for example
 
-./gst-test videotestsrc ! capsfilter caps="video/x-raw, width=480, height=320" name="Cap2" ! queue name="indicator" ! fakesink name=demosink
