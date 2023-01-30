@@ -2,7 +2,7 @@
 #include <glib/gstdio.h>
 #include <gst/gst.h>
 //#include <gtk/gtk.h>
-#define g_debug printf
+//#define g_debug printf
 
 #include <glib.h>
 
@@ -24,6 +24,10 @@ static GstElement *debug_runtime_factory_make(const gchar *el, const gchar *name
         return NULL;
   }
   g_object_set(bin, "name",  name, NULL);
+  /*
+   * Trick: Add counter avoid of resource released at following gst_object_unre() in fn_relink_bin()
+   */
+  g_object_ref(bin);
   return bin;
 }
 #if 0
@@ -84,7 +88,7 @@ static struct gst_element_hash * gst_element_hash_new(gchar *name)
   return h;
 }
 
-static void dump_gst_element_hashs(struct gst_element_hash *h)
+static void dump_gst_element_hashs(GSList *h)
 {
   GSList *iterator = NULL;
   printf("Dump hash\n");
@@ -98,47 +102,33 @@ static void dump_gst_element_hashs(struct gst_element_hash *h)
   printf("\n");
 }
 
-static int fn_relink_bin(GstElement *add_bin,  gchar *name, gchar *parent, void *userdata)
+static gboolean fn_relink_bin(GstElement *add_bin,  gchar *name, gchar *parent, void *userdata)
 {
   GstElement *remove_el, *indicator = NULL;
   GstElement *pipeline = (GstElement *)userdata;
-  // FIXME: leak without relese @demosink
-  g_return_val_if_fail((indicator = gst_bin_get_by_name(GST_BIN (pipeline), parent)) != NULL, NULL);
-  g_return_val_if_fail((remove_el = gst_bin_get_by_name (GST_BIN (pipeline), name)) != NULL, NULL);
-  static int re = 0;
-  g_printerr("Get Name:%s, parent: %s\n", name, parent);
-  g_printerr("Get ref el: %d\n", ((GObject *) remove_el)->ref_count);
 
-  g_return_val_if_fail(gst_bin_remove (GST_BIN (pipeline), remove_el), NULL);
-  //gst_bin_remove (GST_BIN (pipeline), remove_el);
-  g_return_val_if_fail(gst_bin_add(GST_BIN (pipeline), add_bin), NULL);
+  g_assert((indicator = gst_bin_get_by_name(GST_BIN (pipeline), parent)) != NULL);
+  g_assert((remove_el = gst_bin_get_by_name (GST_BIN (pipeline), name)) != NULL);
+
+  g_assert(gst_bin_remove (GST_BIN (pipeline), remove_el));
+  g_assert(gst_bin_add(GST_BIN (pipeline), add_bin));
   gst_element_unlink(indicator, remove_el);
-  g_return_val_if_fail(gst_element_link(indicator, add_bin), NULL);
-  g_printerr("Get ref el: %d\n", ((GObject *) remove_el)->ref_count);
-  g_printerr("Get ref indicator: %d\n", ((GObject *) indicator)->ref_count);
-  g_printerr("Get ref demosink : %d\n", ((GObject *) add_bin)->ref_count);
+  g_assert(gst_element_link(indicator, add_bin));
+
   gst_object_unref(indicator);
+
   gst_element_set_state (remove_el, GST_STATE_NULL);
-  /* TODO: work around, how to remove first element from pipelne_bin properly */
-  re++;
-  if (re > 3)
-    gst_object_unref(remove_el);
+  gst_object_unref(remove_el);
   g_printerr("unref\nGet ref remvoed bin: %d\n", ((GObject *) remove_el)->ref_count);
   g_printerr("Get ref indicator: %d\n", ((GObject *) indicator)->ref_count);
-  return 0;
-out:
-  if (remove_el)
-     gst_object_unref (remove_el);
-  if (indicator)
-     gst_object_unref (indicator);
-  return;
+  return TRUE;
 }
 
-static int __list_roundtrip(struct gst_element_hash *h, int (*fn)(GstElement *,  gchar *, gchar *, void *), void *userdata)
+static int __list_roundtrip(GSList *h, gboolean (*fn)(GstElement *,  gchar *, gchar *, void *), void *userdata)
 {
   GSList *iterator = NULL;
   GSList *ep = NULL;
-  static int nx = 0;
+  static int debug_info_counter = 0, debug_info_first = 0;
 
   for (iterator = h; iterator; iterator = iterator->next) {
     struct gst_element_hash *p = (struct gst_element_hash *)iterator->data;
@@ -146,9 +136,9 @@ static int __list_roundtrip(struct gst_element_hash *h, int (*fn)(GstElement *, 
     /* Get next element object */
     if (p->it) {
       /* Call change element */
-      printf("========= %d change to element (%p, %s, %s)\n", nx++, p->it->data, p->name, p->parent);
+      printf("========= %d change to element (%p, %s, %s)\n", debug_info_counter++, p->it->data, p->name, p->parent);
       if (userdata)
-        g_assert(!fn(p->it->data, p->name, p->parent, userdata));
+        g_assert(fn(p->it->data, p->name, p->parent, userdata));
     }
     /* point to next element */
     p->it = p->it->next;
@@ -193,7 +183,7 @@ int dyanmic_elements_init(gchar *ini)
   for (group = 0; group < num_groups; group++) {
     struct gst_element_hash *ne;
 
-    g_debug("group %u/%u: \t%s\n", group, num_groups - 1, groups[group]);
+    g_debug("group %u/%lu: \t%s\n", group, num_groups - 1, groups[group]);
     ne = gst_element_hash_new(groups[group]);
     Gst_slist_head = g_slist_append(Gst_slist_head, ne);
     
@@ -203,7 +193,7 @@ int dyanmic_elements_init(gchar *ini)
       gchar *locale;
       value = g_key_file_get_value(key_file,
 				   groups[group], keys[key], &error);
-      g_debug("\t\tkey %u/%u: \t%s => %s\n", key,
+      g_debug("\t\tkey %u/%lu: \t%s => %s\n", key,
 	      num_keys - 1, keys[key], value);
 
       if (strncmp(keys[key], "element", strlen("element")) == 0) {

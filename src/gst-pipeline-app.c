@@ -52,8 +52,8 @@
 
 #define APPEND_PAD_PROPERTIES_SECTION(name, string) \
   g_string_append_printf (string, " %.*s %s Pad %.*s\n", \
-      36 - strlen(name) / 2, DASH_LINE, name, \
-      37 - (strlen(name) / 2) - (strlen(name) % 2), DASH_LINE);
+      (int)(36 - strlen(name) / 2), DASH_LINE, name, \
+      (int)(37 - (strlen(name) / 2) - (strlen(name) % 2)), DASH_LINE);
 
 #define APPEND_ELEMENT_SIGNALS_SECTION(string) \
   g_string_append_printf (string, " %.*s Plugin Signals %.*s\n", \
