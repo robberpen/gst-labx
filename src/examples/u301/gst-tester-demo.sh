@@ -93,7 +93,7 @@ export GST_DEBUG=GST_STATES:3,GST_PADS:3,task:3,qtivcomposer:3,aggregator:3 GST_
 $GSTAPP \
 $qmmfsrc0     ! $(CAPS_1080P "CAP0") ! queue ! $TRANSFORM_FLIP ! $overlay ! qtijpegenc ! fakesink \
 qmmf0.video_1 ! $(CAPS_1080P "CAP1") ! queue ! $TRANSFORM_FLIP ! $overlay ! $YUV_TRANS \
-qmmf0.video_2 ! $NV_1080P30 ! queue ! videorate ! $FPS_CAPS ! queue name=tester1 ! $waylandsink name=demosink \
+qmmf0.video_2 ! $NV_1080P30 ! queue ! videorate ! $FPS_CAPS ! queue name=tester1 ! fakesink name=demosink \
 qmmf0.video_3 ! $NV_720P15  ! queue ! $AI_TRANS \
 qmmf0.video_4 ! $NV_720P5   ! queue ! qtivtransform ! jpegenc ! fakesink \
 $qmmfsrc1     ! $NV_1080P30 ! fakesink \
